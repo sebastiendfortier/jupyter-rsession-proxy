@@ -47,7 +47,7 @@ def get_system_user():
     try:
         user = pwd.getpwuid(os.getuid())[0]
     except:
-        user = os.environ.get('NB_USER', getpass.getuser())
+        user = os.getenv('NB_USER', getpass.getuser())
     return(user)
 
 def setup_rserver():
@@ -77,6 +77,12 @@ def setup_rserver():
         ret = subprocess.check_output([get_rstudio_executable('rserver'), '--help'])
         return ret.decode().find(arg) != -1
 
+    def _get_www_frame_origin(default="same"):
+        try:
+            return os.getenv('JUPYTER_RSESSION_PROXY_WWW_FRAME_ORIGIN', default)
+        except Exception:
+            return default
+
     def _get_cmd(port):
         ntf = tempfile.NamedTemporaryFile()
 
@@ -87,9 +93,9 @@ def setup_rserver():
 
         cmd = [
             get_rstudio_executable('rserver'),
-            '--rsession-which-r=/fs/ssm/eccc/cmd/cmds/env/python/py310_2023.07.28_all/py310/bin/R',
             '--auth-none=1',
-            '--www-frame-origin=same',
+            '--rsession-which-r=/fs/ssm/eccc/cmd/cmds/env/python/py310_2023.07.28_all/py310/bin/R',
+            '--www-frame-origin=' + _get_www_frame_origin(),
             '--www-port=' + str(port),
             '--www-verify-user-agent=0',
             '--secure-cookie-key-file=' + ntf.name,
@@ -107,7 +113,10 @@ def setup_rserver():
         return cmd
 
     def _get_timeout(default=15):
-        return os.getenv('RSERVER_TIMEOUT', default)
+        try:
+            return float(os.getenv('RSERVER_TIMEOUT', default))
+        except Exception:
+            return default
 
     server_process = {
         'command': _get_cmd,
@@ -153,7 +162,10 @@ def setup_rsession():
         ]
 
     def _get_timeout(default=15):
-        return os.getenv('RSESSION_TIMEOUT', default)
+        try:
+            return float(os.getenv('RSESSION_TIMEOUT', default))
+        except Exception:
+            return default
 
     return {
         'command': _get_cmd,
