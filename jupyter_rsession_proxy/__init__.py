@@ -94,6 +94,7 @@ def setup_rserver():
         cmd = [
             get_rstudio_executable('rserver'),
             '--auth-none=1',
+            '--rsession-which-r=/fs/ssm/eccc/cmd/cmds/env/python/py310_2023.07.28_all/py310/bin/R',
             '--www-frame-origin=' + _get_www_frame_origin(),
             '--www-port=' + str(port),
             '--www-verify-user-agent=0',
